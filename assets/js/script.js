@@ -1,3 +1,6 @@
+//Globals
+let middleImage = 0; // Display result from the first array
+
 async function getData(url) {
   try {
     // Fetch data from NFSA API
@@ -20,36 +23,45 @@ async function getData(url) {
 
 // Call getData with NFSA API URL
 getData("https://api.collection.nfsa.gov.au/search?query=lobby%20card&hasMedia=yes&forms=Lobby%20card");
+
+
 function displayResults(results) {
   const outputDiv = document.getElementById("hero");
-  let html = "";
 
-  // Results loop 
-  results.forEach(item => {
+  const item = results[middleImage]; // Result of the middle lobby card
 
-    // Combine the base image URL with the API file path
-    const baseurl = "https://media.nfsacollection.net/";
-    const imageurl = baseurl + item.preview[0].filePath;
 
-    html += `
-      <div class="text-center py-12">
+  // Combine the base image URL with the API file path
+  const baseurl = "https://media.nfsacollection.net/";
+  const imageurl = baseurl + item.preview[0].filePath;
 
-        <p class="text-base font-sans mb-9 font-normal">
-          Browse 833 Lobby Cards from the NFSA Collection
-        </p>
+  outputDiv.innerHTML = `
+    <div class="text-center py-12">
 
-        <h1 class="text-4xl font-serif text-red-900 mb-4">
-          ${item.title}
-        </h1>
+      <p class="text-base font-sans mb-9 font-normal">
+        Browse 833 Lobby Cards from the NFSA Collection
+      </p>
 
-        <p class="text-2xl font-sans font-medium">
-          ${item.productionDates[0].fromYear} · ${item.parentTitle.genres}
-        </p>
+      <h1 class="text-4xl font-serif text-red-900 mb-4">
+        ${item.title}
+      </h1>
 
-      <img src="${imageurl}" alt="${item.title}" class= "mx-auto">
+      <p class="text-2xl font-sans font-medium">
+        ${item.productionDates[0].fromYear} · ${item.parentTitle.genres}
+      </p>
+
+      <div class="items-center gap-6 mt-8">
+        <img
+          src="${imageurl}"
+          alt="${item.title}"
+          class="mx-auto"
+        >
+        <button id="previousButton"><</button>
+        <button id="nextButton">></button>
       </div>
-    `;
-  });
 
-  outputDiv.innerHTML = html;
+    </div>
+  `;
 }
+
+outputDiv.innerHTML = html;
