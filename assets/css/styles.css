@@ -1,0 +1,18 @@
+body {
+    background-color: #F8F6F0;
+    overflow-x: hidden;
+}
+
+footer {
+    background-attachment: fixed;
+    background-color: #7f1d1d;
+    height: 35px;
+    display: flex;
+    align-items: center;
+}
+
+.footertext {
+    color: beige;
+    margin-left: 10px;
+}
+

@@ -1,5 +1,7 @@
 //Globals
 let middleImage = 0; // Display result from the first array
+let yearImage = 0;   // Display same year from the first array
+let genreImage = 0;  // Display same genre from the first array
 let carouselResults = [];
 
 async function getData(url) {
@@ -15,7 +17,7 @@ async function getData(url) {
     console.log(data);
 
     // Call function to display results
-    displayResults(data.results);
+    displayResults(data.results, "hero");
   } catch (error) {
     console.error(error.message);
     document.getElementById("hero").innerHTML = `<p>Error fetching data. Please try again later.</p>`;
@@ -25,8 +27,10 @@ async function getData(url) {
 // Call getData with NFSA API URL
 getData("https://api.collection.nfsa.gov.au/search?query=lobby%20card&hasMedia=yes&forms=Lobby%20card");
 
-function displayResults(results) {
-  const outputDiv = document.getElementById("hero");
+//------------------------------------- Hero --------------------------------------
+
+function displayResults(results, section) {
+  const outputDiv = document.getElementById(section);
 
   // Work out the previous and next positions
   let previousIndex = middleImage - 1;
@@ -46,6 +50,9 @@ function displayResults(results) {
   const previousItem = results[previousIndex];
   const item = results[middleImage];
   const nextItem = results[nextIndex];
+  // Call More Like This here
+  displayMoreLikeThis(results, item);
+
 
   // Combine the base image URL with the API file path
   const baseurl = "https://media.nfsacollection.net/";
@@ -59,13 +66,13 @@ function displayResults(results) {
 
 
   outputDiv.innerHTML = `
-    <div class="text-center py-12">
+    <div class="text-center py-10">
 
-      <p class="text-base font-sans mb-9 font-normal">
-        Browse 833 Lobby Cards from the NFSA Collection
+      <p class="text-base font-sans mb-12 font-normal">
+        Explore 833 lobby cards from the NFSA Collection and discover films through their titles, production years and genres.
       </p>
 
-      <h1 class="text-4xl font-serif text-red-900 mb-4">
+      <h1 class="text-4xl font-serif text-red-900 mb-2">
         ${item.title}
       </h1>
 
@@ -73,7 +80,7 @@ function displayResults(results) {
         ${item.productionDates[0].fromYear} · ${item.parentTitle.genres}
       </p>
 
-      <div class="flex justify-center gap-6 mt-6 h-80 w-auto">
+      <div class="flex overflow-hidden justify-center gap-6 mt-6 h-80 w-auto">
         <img
           src="${previousImageurl}"
           alt="${previousItem.title}"
@@ -93,8 +100,9 @@ function displayResults(results) {
         >
       </div>
 
-      <div>
+      <div class="flex justify-center gap-10 mt-2">
         <button id="previousButton"><</button>
+        <p> Scroll down to discover more like this </p>
         <button id="nextButton">></button>
       </div>
 
@@ -111,7 +119,7 @@ function displayResults(results) {
       middleImage = 0;
     }
 
-    displayResults(results);
+    displayResults(results, section);
   });
 
 
@@ -124,6 +132,97 @@ function displayResults(results) {
       middleImage = results.length - 1;
     }
 
-    displayResults(results);
+    displayResults(results, section);
   });
+}
+
+//--------------------------------- More Like This -------------------------------------------
+
+function displayMoreLikeThis(results, item) {
+
+  const section = document.getElementById("more-like-this");
+
+  const currentYear = item.productionDates[0].fromYear;
+  const currentGenre = item.parentTitle.genres;
+
+  // Filtering results
+  const sameYearResults = results.filter(film => {
+    return film.productionDates[0].fromYear === currentYear;
+  });
+
+  const sameGenreResults = results.filter(film => {
+    return film.parentTitle.genres === currentGenre;
+  });
+
+  //Testing
+  console.log("Same year:", sameYearResults);
+  console.log("Same genre:", sameGenreResults);
+
+  // Display results
+  const yearItem = sameYearResults[0];
+  const genreItem = sameGenreResults[0];
+
+  const baseurl = "https://media.nfsacollection.net/";
+
+  // Combine the base image URL with the API file path and filtered results 
+  const yearImageurl =
+    baseurl + yearItem.preview[0].filePath; 
+
+  const genreImageurl =
+    baseurl + genreItem.preview[0].filePath;
+
+  section.innerHTML = `
+    <div class="text-center py-10">
+
+      <h2 class="text-4xl font-serif mb-12">
+        More Like This
+      </h2>
+
+      <div class="flex justify-evenly">
+
+        <div>
+          <h3 class="text-2xl">
+            ${currentYear}
+          </h3>
+
+          <p>
+            Browse ${sameYearResults.length} Lobby Cards
+          </p>
+
+          <img
+            src="${yearImageurl}"
+            alt="${yearItem.title}"
+            class="h-80 mt-6"
+          >
+
+          <p class="text-xl font-serif mt-4 text-red-900">
+            ${yearItem.title}
+          </p>
+        </div>
+
+
+        <div>
+          <h3 class="text-2xl">
+            ${currentGenre}
+          </h3>
+
+          <p>
+            Browse ${sameGenreResults.length} Lobby Cards
+          </p>
+
+          <img
+            src="${genreImageurl}"
+            alt="${genreItem.title}"
+            class="h-80 mt-6"
+          >
+
+          <p class="text-xl font-serif mt-4 text-red-900">
+            ${genreItem.title}
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  `;
 }
