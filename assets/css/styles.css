@@ -1,5 +1,5 @@
 body {
-    background-color: #F8F6F0;
+  background: linear-gradient(#F8F6F0, #F8F6F0, #E6DEDB);
     overflow-x: hidden;
 }
 
@@ -12,7 +12,7 @@ footer {
 }
 
 .footertext {
-    color: beige;
+    color:  #F8F6F0;
     margin-left: 10px;
 }
 
