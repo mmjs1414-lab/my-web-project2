@@ -1,6 +1,27 @@
+header {
+    background-color: #7f1d1d;
+    height: 45px;
+    display: flex;
+    width: 100%;
+    position: fixed;
+    z-index: 10;
+}
+
+.headertext,.footertext {
+color: #F8F6F0;
+padding: 10px;
+}
+
+.headertext {
+font-weight:500
+}
 body {
-  background: linear-gradient(#F8F6F0, #F8F6F0, #E6DEDB);
+  background: linear-gradient(#F8F6F0, #E6DEDB);
     overflow-x: hidden;
+}
+
+#hero {
+    padding: 40px;
 }
 
 footer {
@@ -8,11 +29,4 @@ footer {
     background-color: #7f1d1d;
     height: 35px;
     display: flex;
-    align-items: center;
 }
-
-.footertext {
-    color:  #F8F6F0;
-    margin-left: 10px;
-}
-

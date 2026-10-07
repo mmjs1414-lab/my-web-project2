@@ -1,5 +1,5 @@
 //Globals
-let middleImage = 10; // Display result from the first array
+let middleImage = 233; // Display result from a random array 233
 let yearImage = 0;   // Display same year from the first array
 let genreImage = 0;  // Display same genre from the first array
 let allResults = [];
@@ -13,7 +13,7 @@ let currentQueryUrl =
 
 // Loading every page (34 pages) of results from the API before displaying the website
 async function loadAllResults() {
-
+  
   let page = 1;
 
   // While loop for requesting pages until the last page is reached
@@ -50,7 +50,48 @@ async function loadAllResults() {
   displayResults(allResults, "hero");
 }
 
+//--------------------------------- Search --------------------------------------
+
+// Find the search input from the HTML
+const searchInput = document.getElementById("searchInput");
+
+// Run the search each time the user types
+searchInput.addEventListener("input", function () {
+
+// Get the search text and make it lowercase
+  const searchTerm = searchInput.value.toLowerCase();
+
+  const searchResults = allResults.filter(item => {
+    return item.title &&
+      item.title.toLowerCase().includes(searchTerm);
+  });
+
+  // Test
+  console.log("Search results:", searchResults);
+
+  // Reset carousel to the first search result, other valyes causes error
+  middleImage = 0;
+
+// If there are matching results, display them in hero
+if (searchResults.length > 0) {
+  displayResults(searchResults, "hero");
+
+// If no matching result, display message in hero section
+} else {
+  const outputDiv = document.getElementById("hero");
+  outputDiv.innerHTML = `
+    <div class="text-center py-20">
+      <h2 class="text-3xl font-serif text-red-900">
+        No results found for "${searchInput.value}"
+      </h2>
+  `;
+}
+
+});
+
 loadAllResults();
+
+
 
 //------------------------------------- Hero --------------------------------------
 
@@ -95,18 +136,18 @@ function displayResults(results, section) {
     <div class="text-center py-10">
 
       <p class="text-base font-sans mb-12 font-normal">
-        Explore 833 lobby cards from the NFSA Collection and discover films through their titles, production years and genres.
+        Explore ${allResults.length} lobby cards from the NFSA Collection and discover films through their titles, production years and genres.
       </p>
 
       <h1 class="text-4xl font-serif text-red-900 mb-2">
         ${item.title}
       </h1>
 
-      <p class="text-2xl font-sans font-medium">
-        ${item.productionDates[0].fromYear} · ${item.parentTitle.genres}
-      </p>
+<p class="text-2xl font-sans font-medium">
+  ${item.productionDates[0].fromYear} · ${item.parentTitle.genres === null ? "Genre Unavailable" : item.parentTitle.genres.join(", ")}
+</p>
 
-      <div class="flex overflow-hidden justify-center gap-6 mt-6 h-80 w-auto">
+      <div class="flex overflow-hidden justify-center gap-6 mt-6 h-80 w-auto ">
         <img
           src="${previousImageurl}"
           alt="${previousItem.title}"
@@ -142,11 +183,11 @@ function displayResults(results, section) {
     middleImage = middleImage + 1;
 
     // Return to the first result after reaching the end
-    if (middleImage >= allResults.length) {
+    if (middleImage >= results.length) {
       middleImage = 0;
     }
 
-    displayResults(allResults, section);
+    displayResults(results, section);
   });
 
 
@@ -157,10 +198,10 @@ function displayResults(results, section) {
 
     // Go to the last result if the user moves before the first result
     if (middleImage < 0) {
-      middleImage = allResults.length - 1;
+      middleImage = results.length - 1;
     }
 
-    displayResults(allResults, section);
+    displayResults(results, section);
   });
 }
 
@@ -204,8 +245,8 @@ function displayMoreLikeThis(results, item) {
   console.log("Same genre:", sameGenreResults);
 
   // Display results
-  const yearItem = sameYearResults[0]; // First result of filtered  array
-  const genreItem = sameGenreResults[0];
+  const yearItem = sameYearResults[yearImage];
+  const genreItem = sameGenreResults[genreImage];
 
   const baseurl = "https://media.nfsacollection.net/";
 
@@ -219,14 +260,14 @@ function displayMoreLikeThis(results, item) {
   // Secondary carousels layout and styling 
   section.innerHTML = `
     <div class="text-center py-8">
-
       <h2 class="text-4xl font-serif mb-16">
         MORE LIKE "${item.title}"
       </h2>
 
-      <div class="flex justify-evenly">
+      <div class="flex justify-evenly items-start">
 
-        <div>
+      <!-- Same Year -->
+      <div class="w-96 text center">
           <h3 class="text-2xl font-medium">
             ${currentYear}
           </h3>
@@ -238,16 +279,20 @@ function displayMoreLikeThis(results, item) {
           <img
             src="${yearImageurl}"
             alt="${yearItem.title}"
-            class="h-80 mt-6 border-4 border-red-900"
+            class="h-80 max-w-full mx-auto mt-6 border-4 border-red-900"
           >
 
-          <p class="text-xl font-serif mt-4 text-red-900">
+        <div class="flex items-center justify-center gap-6 mt-2">
+        <button id="previousYearButton"><</button>
+          <p class="text-xl font-serif mt-4 text-red-900 flex-1 text-center">
             ${yearItem.title}
           </p>
+        <button id="nextYearButton">></button>
+        </div>
         </div>
 
-
-        <div>
+<!-- Same Gnere -->
+  <div class="w-96 text-center">
           <h3 class="text-2xl font-medium">
             ${currentGenre === null ? "Genre Unavailable" : currentGenre.join(", ")}
           </h3>
@@ -259,19 +304,72 @@ function displayMoreLikeThis(results, item) {
           <img
             src="${genreImageurl}"
             alt="${genreItem.title}"
-            class="h-80 mt-6 border-4 border-red-900"
+            class="h-80 max-w-full mx-auto mt-6 border-4 border-red-900"
           >
 
-          <p class="text-xl font-serif mt-4 text-red-900">
+        <div class="flex items-center justify-center gap-6 mt-2">
+        <button id="previousGenreButton"><</button>
+          <p class="text-xl font-serif mt-4 text-red-900 text-center flex-1">
             ${genreItem.title}
           </p>
-        </div>
-
-      </div>
+        <button id="nextGenreButton">></button>
+</div>
+</div>
+</div>
 
     </div>
   `;
 
   console.log("Selected card:", item.title);
   console.log("Current genre:", currentGenre);
+
+  // Next year button
+  document.getElementById("nextYearButton").addEventListener("click", () => {
+
+    yearImage = yearImage + 1;
+
+    if (yearImage >= sameYearResults.length) {
+      yearImage = 0;
+    }
+
+    displayMoreLikeThis(allResults, item);
+  });
+
+
+  // Previous year button
+  document.getElementById("previousYearButton").addEventListener("click", () => {
+
+    yearImage = yearImage - 1;
+
+    if (yearImage < 0) {
+      yearImage = sameYearResults.length - 1;
+    }
+
+    displayMoreLikeThis(allResults, item);
+  });
+
+  // Next genre button
+  document.getElementById("nextGenreButton").addEventListener("click", () => {
+
+    genreImage = genreImage + 1;
+
+    if (genreImage >= sameGenreResults.length) {
+      genreImage = 0;
+    }
+
+    displayMoreLikeThis(allResults, item);
+  });
+
+
+  // Previous genre button
+  document.getElementById("previousGenreButton").addEventListener("click", () => {
+
+    genreImage = genreImage - 1;
+
+    if (genreImage < 0) {
+      genreImage = sameGenreResults.length - 1;
+    }
+
+    displayMoreLikeThis(allResults, item);
+  });
 }
