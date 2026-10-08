@@ -1,11 +1,12 @@
 //Globals
-let middleImage = 233; // Display result from a random array 233
+let min = 0;
+let max = 833;
+let middleImage = Math.floor(Math.random() * (max - min + 1)) + min; // Random selection for middle image, changes when user refreshes
 let yearImage = 0;   // Display same year from the first array
 let genreImage = 0;  // Display same genre from the first array
 let allResults = [];
 let limit = 25;
 let sameGenreResults = [];
-
 
 // NFSA API search URL
 let currentQueryUrl =
@@ -13,7 +14,18 @@ let currentQueryUrl =
 
 // Loading every page (34 pages) of results from the API before displaying the website
 async function loadAllResults() {
-  
+
+  // Show loading message while API results are being fetched
+  const outputDiv = document.getElementById("hero");
+  outputDiv.innerHTML = `
+    <div class="text-center items-center py-20 justify-center">
+      <h2 class="text-4xl font-serif text-red-900 mb-6">
+        Loading...
+      </h2>
+      <p> Please wait few seconds for the lobby cards to be fetched from the NFSA collection. </p>
+    </div>
+  `;
+
   let page = 1;
 
   // While loop for requesting pages until the last page is reached
@@ -58,7 +70,7 @@ const searchInput = document.getElementById("searchInput");
 // Run the search each time the user types
 searchInput.addEventListener("input", function () {
 
-// Get the search text and make it lowercase
+  // Get the search text and make it lowercase
   const searchTerm = searchInput.value.toLowerCase();
 
   const searchResults = allResults.filter(item => {
@@ -72,30 +84,38 @@ searchInput.addEventListener("input", function () {
   // Reset carousel to the first search result, other valyes causes error
   middleImage = 0;
 
-// If there are matching results, display them in hero
-if (searchResults.length > 0) {
-  displayResults(searchResults, "hero");
+  // If there are matching results, display them in hero
+  if (searchResults.length > 0) {
 
-// If no matching result, display message in hero section
-} else {
-  const outputDiv = document.getElementById("hero");
-  outputDiv.innerHTML = `
+    console.log("Number of matches:", searchResults.length);
+    console.log("First match:", searchResults[0]);
+
+    displayResults(searchResults, "hero");
+
+    // If no matching result, display message in hero section
+  } else {
+    const outputDiv = document.getElementById("hero");
+    const section = document.getElementById("more-like-this");
+
+    outputDiv.innerHTML = `
     <div class="text-center py-20">
-      <h2 class="text-3xl font-serif text-red-900">
+      <h2 class="text-4xl font-serif text-red-900">
         No results found for "${searchInput.value}"
       </h2>
   `;
-}
 
+
+    // Remove the previous More Like This results
+    section.innerHTML = "";
+  }
 });
 
 loadAllResults();
 
-
-
 //------------------------------------- Hero --------------------------------------
 
 function displayResults(results, section) {
+
   // Find the HTML of Hero 
   const outputDiv = document.getElementById(section);
 
@@ -117,9 +137,9 @@ function displayResults(results, section) {
   const previousItem = results[previousIndex];
   const item = results[middleImage];
   const nextItem = results[nextIndex];
+
   // Send the selected hero item to the More Like This seciton
   displayMoreLikeThis(results, item);
-
 
   // Combine the base image URL with the API file path
   const baseurl = "https://media.nfsacollection.net/";
@@ -135,7 +155,7 @@ function displayResults(results, section) {
   outputDiv.innerHTML = `
     <div class="text-center py-10">
 
-      <p class="text-base font-sans mb-12 font-normal">
+      <p class="text-base font-sans mb-10 font-normal">
         Explore ${allResults.length} lobby cards from the NFSA Collection and discover films through their titles, production years and genres.
       </p>
 
@@ -167,10 +187,16 @@ function displayResults(results, section) {
         >
       </div>
 
-      <div class="flex justify-center gap-10 mt-2">
-        <button id="previousButton"><</button>
+      <div class="flex justify-center items-center gap-8 mt-4">
+        <button id="previousButton"
+          class="flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50">
+          <span class="text-4xl leading-none -translate-y-1">←</span>
+        </button>
         <p> Scroll down to discover more like this </p>
-        <button id="nextButton">></button>
+        <button id="nextButton"
+          class="flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50">
+          <span class="text-4xl leading-none -translate-y-1">→</span>
+        </button>
       </div>
 
     </div>
@@ -259,9 +285,9 @@ function displayMoreLikeThis(results, item) {
 
   // Secondary carousels layout and styling 
   section.innerHTML = `
-    <div class="text-center py-8">
-      <h2 class="text-4xl font-serif mb-16">
-        MORE LIKE "${item.title}"
+    <div class="text-center mb-10 mt-4">
+      <h2 class="text-4xl font-serif mb-14">
+        MORE LIKE <span class="text-red-900">"${item.title}"</span>
       </h2>
 
       <div class="flex justify-evenly items-start">
@@ -283,16 +309,24 @@ function displayMoreLikeThis(results, item) {
           >
 
         <div class="flex items-center justify-center gap-6 mt-2">
-        <button id="previousYearButton"><</button>
+          <button id="previousYearButton"
+            class="flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50">
+            <span class="text-4xl leading-none -translate-y-1">←</span>
+          </button>
+
           <p class="text-xl font-serif mt-4 text-red-900 flex-1 text-center">
             ${yearItem.title}
           </p>
-        <button id="nextYearButton">></button>
+
+          <button id="nextYearButton"
+            class="flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50">
+            <span class="text-4xl leading-none -translate-y-1">→</span>
+          </button>
         </div>
-        </div>
+      </div>
 
 <!-- Same Gnere -->
-  <div class="w-96 text-center">
+<div class="w-96 text-center">
           <h3 class="text-2xl font-medium">
             ${currentGenre === null ? "Genre Unavailable" : currentGenre.join(", ")}
           </h3>
@@ -307,18 +341,26 @@ function displayMoreLikeThis(results, item) {
             class="h-80 max-w-full mx-auto mt-6 border-4 border-red-900"
           >
 
-        <div class="flex items-center justify-center gap-6 mt-2">
-        <button id="previousGenreButton"><</button>
+  <div class="flex items-center justify-center gap-6 mt-2">
+   <button id="previousGenreButton"
+      class="flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50">
+      <span class="text-4xl leading-none -translate-y-1">←</span>
+   </button>
+
           <p class="text-xl font-serif mt-4 text-red-900 text-center flex-1">
             ${genreItem.title}
           </p>
-        <button id="nextGenreButton">></button>
-</div>
-</div>
-</div>
+
+          <button id="nextGenreButton"
+            class="flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50">
+            <span class="text-4xl leading-none -translate-y-1">→</span>
+          </button>
+        </div>
+      </div>
 
     </div>
-  `;
+  </div>
+`;
 
   console.log("Selected card:", item.title);
   console.log("Current genre:", currentGenre);
