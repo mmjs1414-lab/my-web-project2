@@ -8,6 +8,10 @@ let allResults = [];
 let limit = 25;
 let sameGenreResults = [];
 
+// Reusable button styles 
+const buttonStyle = "flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50 shrink-0";
+const arrowStyle = "text-4xl leading-none -translate-y-1";
+
 // NFSA API search URL
 let currentQueryUrl =
   "https://api.collection.nfsa.gov.au/search?query=lobby%20card&hasMedia=yes&forms=Lobby%20card";
@@ -18,7 +22,7 @@ async function loadAllResults() {
   // Show loading message while API results are being fetched
   const outputDiv = document.getElementById("hero");
   outputDiv.innerHTML = `
-    <div class="text-center items-center py-20 justify-center">
+    <div class="text-center justify-center py-20">
       <h2 class="text-4xl font-serif text-red-900 mb-6">
         Loading...
       </h2>
@@ -45,8 +49,20 @@ async function loadAllResults() {
     const data = await response.json();
     console.log(data);
 
+    // Filter out unwanted results 
+    const filteredResults = data.results.filter(item => {
+
+      const genres = item.parentTitle.genres;
+
+      if (genres === null) {
+        return true;
+      }
+
+      return !genres.includes("Sex and erotica")
+    });
+
     // Add the new page of results to all previously loaded results 
-    allResults = allResults.concat(data.results);
+    allResults = allResults.concat(filteredResults);
     console.log("Page:", page);
     console.log("Total results so far:", allResults.length); //Test
 
@@ -153,49 +169,51 @@ function displayResults(results, section) {
 
   // Main carousel layout and styling 
   outputDiv.innerHTML = `
-    <div class="text-center py-10">
+    <div class="text-center py-10 px-4">
 
       <p class="text-base font-sans mb-10 font-normal">
         Explore ${allResults.length} lobby cards from the NFSA Collection and discover films through their titles, production years and genres.
       </p>
 
-      <h1 class="text-4xl font-serif text-red-900 mb-2">
+      <h1 class="text-2xl md:text-4xl font-serif text-red-900 mb-2 break-words">
         ${item.title}
       </h1>
 
-<p class="text-2xl font-sans font-medium">
-  ${item.productionDates[0].fromYear} · ${item.parentTitle.genres === null ? "Genre Unavailable" : item.parentTitle.genres.join(", ")}
+<p class="text-base md:text-2xl font-sans font-medium break-words">
+  ${item.productionDates[0].fromYear} ·
+  ${item.parentTitle.genres === null
+      ? "Genre Unavailable"
+      : item.parentTitle.genres.join(", ")}
 </p>
 
-      <div class="flex overflow-hidden justify-center gap-6 mt-6 h-80 w-auto ">
+      <div class="flex justify-center items-center gap-2 lg:gap-6 mt-6">
         <img
           src="${previousImageurl}"
           alt="${previousItem.title}"
-          class ="opacity-30"
+          class ="hidden lg:block opacity-30 lg:w-96 lg:h-80 object-contain"
         >
 
         <img
           src="${imageurl}"
           alt="${item.title}"
-          class = "border-4 border-red-900"
+          class = "block w-auto h-auto max-w-full max-h-64 lg:max-w-96 lg:max-h-80 border-4 border-red-900"
         >
 
         <img
           src="${nextImageurl}"
           alt="${nextItem.title}"
-          class ="opacity-30"
+          class ="hidden lg:block opacity-30 lg:w-96 lg:h-80 object-contain"
         >
+
       </div>
 
-      <div class="flex justify-center items-center gap-8 mt-4">
-        <button id="previousButton"
-          class="flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50">
-          <span class="text-4xl leading-none -translate-y-1">←</span>
+      <div class="flex justify-center items-center gap-8 md:gap-6 mt-4">
+        <button id="previousButton" class="${buttonStyle}">
+        <span class="${arrowStyle}">←</span>
         </button>
-        <p> Scroll down to discover more like this </p>
-        <button id="nextButton"
-          class="flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50">
-          <span class="text-4xl leading-none -translate-y-1">→</span>
+        <p class="text-xs md:text-base"> Scroll down to discover more like this </p>
+        <button id="nextButton" class="${buttonStyle}">
+        <span class="${arrowStyle}">→</span>
         </button>
       </div>
 
@@ -232,6 +250,48 @@ function displayResults(results, section) {
 }
 
 //--------------------------------- More Like This -------------------------------------------
+
+// Reusable HTML for Same Year and Same Genre carousels
+function displayCards(type, heading, results, index) {
+
+  const item = results[index];
+  const imageurl = "https://media.nfsacollection.net/" + item.preview[0].filePath;
+
+  return `
+    <div class="w-96 text-center">
+
+      <h3 class="text-lg md:text-2xl font-medium mb-2 truncate">
+        ${heading}
+      </h3>
+
+      <p>
+        Browse ${results.length} Lobby Cards
+      </p>
+
+      <img
+        src="${imageurl}"
+        alt="${item.title}"
+        class="max-w-full max-h-64 md:max-h-80 w-auto h-auto mx-auto mt-6 border-4 border-red-900"
+      >
+
+      <div class="flex items-center justify-center gap-16 sm:gap-16 md:gap-10 mt-4">
+
+        <button id="previous${type}Button" class="${buttonStyle}">
+          <span class="${arrowStyle}">←</span>
+        </button>
+
+        <p class="text-base md:text-xl font-serif text-red-900 w-32 md:w-56 shrink-0 text-center break-words">
+          ${item.title}
+        </p>
+
+        <button id="next${type}Button" class="${buttonStyle}">
+          <span class="${arrowStyle}">→</span>
+        </button>
+
+      </div>
+    </div>
+  `;
+}
 
 function displayMoreLikeThis(results, item) {
 
@@ -284,82 +344,29 @@ function displayMoreLikeThis(results, item) {
 
 
   // Secondary carousels layout and styling 
+
   section.innerHTML = `
-    <div class="text-center mb-10 mt-4">
-      <h2 class="text-4xl font-serif mb-14">
+    <div class="text-center mb-8 px-4">
+
+      <h2 class="text-2xl font-serif mb-14 md:text-4xl">
         MORE LIKE <span class="text-red-900">"${item.title}"</span>
       </h2>
 
-      <div class="flex justify-evenly items-start">
+      <div class="flex flex-col md:flex-row justify-evenly items-center md:items-start gap-10 md:gap-6t">
 
       <!-- Same Year -->
-      <div class="w-96 text center">
-          <h3 class="text-2xl font-medium">
-            ${currentYear}
-          </h3>
+      ${displayCards("Year", currentYear, sameYearResults, yearImage)}
 
-          <p>
-            Browse ${sameYearResults.length} Lobby Cards
-          </p>
-
-          <img
-            src="${yearImageurl}"
-            alt="${yearItem.title}"
-            class="h-80 max-w-full mx-auto mt-6 border-4 border-red-900"
-          >
-
-        <div class="flex items-center justify-center gap-6 mt-2">
-          <button id="previousYearButton"
-            class="flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50">
-            <span class="text-4xl leading-none -translate-y-1">←</span>
-          </button>
-
-          <p class="text-xl font-serif mt-4 text-red-900 flex-1 text-center">
-            ${yearItem.title}
-          </p>
-
-          <button id="nextYearButton"
-            class="flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50">
-            <span class="text-4xl leading-none -translate-y-1">→</span>
-          </button>
-        </div>
-      </div>
 
 <!-- Same Gnere -->
-<div class="w-96 text-center">
-          <h3 class="text-2xl font-medium">
-            ${currentGenre === null ? "Genre Unavailable" : currentGenre.join(", ")}
-          </h3>
-
-          <p>
-            Browse ${sameGenreResults.length} Lobby Cards
-          </p>
-
-          <img
-            src="${genreImageurl}"
-            alt="${genreItem.title}"
-            class="h-80 max-w-full mx-auto mt-6 border-4 border-red-900"
-          >
-
-  <div class="flex items-center justify-center gap-6 mt-2">
-   <button id="previousGenreButton"
-      class="flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50">
-      <span class="text-4xl leading-none -translate-y-1">←</span>
-   </button>
-
-          <p class="text-xl font-serif mt-4 text-red-900 text-center flex-1">
-            ${genreItem.title}
-          </p>
-
-          <button id="nextGenreButton"
-            class="flex items-center justify-center border-2 border-red-900 text-red-900 rounded-full w-10 h-8 hover:bg-red-900 hover:text-orange-50">
-            <span class="text-4xl leading-none -translate-y-1">→</span>
-          </button>
-        </div>
-      </div>
-
-    </div>
-  </div>
+${displayCards(
+    "Genre",
+    currentGenre === null ? "Genre Unavailable" : currentGenre.join(", "),
+    sameGenreResults,
+    genreImage
+  )}
+</div>
+</div>
 `;
 
   console.log("Selected card:", item.title);
